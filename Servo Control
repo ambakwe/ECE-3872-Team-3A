@@ -1,1 +1,17 @@
 
+// Hello World to sweep a servo through its full range
+
+#include "mbed.h"
+#include "Servo.h"
+
+Servo myservo(p21);
+AnalogIn pot(p19);
+PwmOut LED(LED1);
+
+int main() {
+    //control the angle of the servo using a potentiometer
+    while(1) {  
+        LED = pot; //LED will change brightness with the pot for testing purposes
+        myservo = pot; //the angle of the pot will adjust the voltage out which will move the servo accordingly
+    }
+}

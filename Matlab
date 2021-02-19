@@ -30,7 +30,7 @@ fs_kHz = 5;
 
 % Set the tempo and the octive for the conductor
 Octive = 4;
-tempo_s = 0.1 %This is the time in seconds for each note
+tempo_s = 0.8 %This is the time in seconds for each note
 
 %% Parameters for code simulation
 tempo_resolution = .05; %this is a value between 0 and 1. 1 being full resolution
@@ -96,36 +96,53 @@ ylabel("Amplitude")
 title("Spectrum of Row Row Row Your Boat")
 
 %% Do the envelope detection
-save envelope.mat -v7.3 signal
-load('envelope.mat');
-Fs=1000;
-song_envelope = envelope(signal,Fs);
-figure(3)
+Fs=3000;
+song_envelope = envelope(signal,Fs); % get the envelope of the song
+
+figure(4)
 plot(song_envelope)
+xlabel("Time (s)")
+ylabel("Amplitude")
+title("Envelope of Row Row Row Your Boat")
 filename = 'song_test.wav';
-audiowrite(filename, signal, Fs);
+audiowrite(filename, signal, Fs);        % save the song as a .wav file to listen to
 
 %% Find the Tempo
+
+% fft method
+fft_envelope = fft(signal);
+fft_envelope = fft_envelope(1:floor(length(signal)/2));
+DCBlock_envelope = highpass(real(fft_envelope), 1, Fs); % use a highpass filter at 1Hz to eliminate low frequency noise
+LP_envelope = lowpass(DCBlock_envelope, 350, Fs);       % Low Pass filter to eliminate high frequency noise
+tempo_from_fft = max(LP_envelope) / 10000               % find the tempo
+figure(5)
+plot(LP_envelope)
+xlabel("Frequency (kHz)")
+ylabel("Amplitude")
+title("Tempo Spectrum")
+
+
+% work in progress
+% env_test = envelope(signal);
+% fft_env_test = fft(env_test);
+% fft_env_test = fft_env_test(1:floor(length(signal)/2));
+% DCblk = highpass(imag(fft_env_test), 1 , Fs);
+% plot(DCblk)
+
+% array indexing method
 rest_amplitude = min(song_envelope);            % normalize amplitude of the rests
 rest = song_envelope < rest_amplitude +0.001;   % isolates the rests in the song by inverting the envelope array
-
-
-% the next four lines dont work because the rest length is not the same
-% number of indices for all tempos 
-
-% we need to change this to iterate through the rest_envelope array to find
-% the length of a rest. Once we have the number of indices in a rest, we
-% can use that to find the signal_tempo.
-
 rest_start = find(rest, 1);                     % look for the array index where the first rest begins
 rest_length = 4000;                             % 4000 indices between beginning and end of the rest
 rest_stop = (rest_start + rest_length);         % 
-signal_tempo = time_s(rest_stop) - time_s(rest_start)  % find the tempo by 
+tempo_from_indexing = time_s(rest_stop) - time_s(rest_start)  % find the tempo by 
 
-
-
-figure(4)
+figure(6)
 plot(rest)
+xlabel("Time (s)")
+ylabel("Amplitude")
+title("Envelope Inverse of Row Row Row Your Boat")
+
 
 %% Sync the time
 

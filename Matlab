@@ -96,8 +96,8 @@ ylabel("Amplitude")
 title("Spectrum of Row Row Row Your Boat")
 
 %% Do the envelope detection
-Fs=3000;
-song_envelope = envelope(signal,Fs); % get the envelope of the song
+Fs_kHz = 2;
+song_envelope = envelope(signal,Fs_kHz); % get the envelope of the song
 
 figure(4)
 plot(song_envelope)
@@ -105,43 +105,43 @@ xlabel("Time (s)")
 ylabel("Amplitude")
 title("Envelope of Row Row Row Your Boat")
 filename = 'song_test.wav';
-audiowrite(filename, signal, Fs);        % save the song as a .wav file to listen to
+audiowrite(filename, signal, Fs_kHz);        % save the song as a .wav file to listen to
 
 %% Find the Tempo
 
 % fft method
-fft_envelope = fft(signal);
-fft_envelope = fft_envelope(1:floor(length(signal)/2));
-DCBlock_envelope = highpass(real(fft_envelope), 1, Fs); % use a highpass filter at 1Hz to eliminate low frequency noise
-LP_envelope = lowpass(DCBlock_envelope, 350, Fs);       % Low Pass filter to eliminate high frequency noise
-tempo_from_fft = max(LP_envelope) / 10000               % find the tempo
-figure(5)
-plot(LP_envelope)
+fft_envelope = fft(song_envelope);
+fft_envelope(1:5) = 0;
+freq_scale = linspace(-Fs_kHz/2, Fs_kHz/2, length(fft_envelope))
+plot(freq_scale, abs(fftshift(fft_envelope)))
 xlabel("Frequency (kHz)")
 ylabel("Amplitude")
 title("Tempo Spectrum")
 
-
-% work in progress
-% env_test = envelope(signal);
-% fft_env_test = fft(env_test);
-% fft_env_test = fft_env_test(1:floor(length(signal)/2));
-% DCblk = highpass(imag(fft_env_test), 1 , Fs);
-% plot(DCblk)
-
-% array indexing method
-rest_amplitude = min(song_envelope);            % normalize amplitude of the rests
-rest = song_envelope < rest_amplitude +0.001;   % isolates the rests in the song by inverting the envelope array
-rest_start = find(rest, 1);                     % look for the array index where the first rest begins
-rest_length = 4000;                             % 4000 indices between beginning and end of the rest
-rest_stop = (rest_start + rest_length);         % 
-tempo_from_indexing = time_s(rest_stop) - time_s(rest_start)  % find the tempo by 
-
-figure(6)
-plot(rest)
-xlabel("Time (s)")
-ylabel("Amplitude")
-title("Envelope Inverse of Row Row Row Your Boat")
+% fft_envelope = fft_envelope(1:floor(length(signal)/2));
+% DCBlock_envelope = highpass(real(fft_envelope), 1, Fs);     % use a highpass filter at 1Hz to eliminate low frequency noise
+% LP_envelope = lowpass(DCBlock_envelope, 350, Fs);           % Low Pass filter to eliminate high frequency noise
+% tempo_from_fft = max(LP_envelope)                           % find the tempo
+% figure(5)
+% plot(LP_envelope)
+% xlabel("Frequency (kHz)")
+% ylabel("Amplitude")
+% title("Tempo Spectrum")
+% 
+% % array indexing method
+% rest_amplitude = min(song_envelope);            % normalize amplitude of the rests
+% rest = song_envelope < rest_amplitude +0.001;   % isolates the rests in the song by inverting the envelope array
+% 
+% rest_start = find(rest, 1);                     % look for the array index where the first rest begins
+% rest_length = 4000;                             % 4000 indices between beginning and end of the rest
+% rest_stop = (rest_start + rest_length);         % 
+% tempo_from_indexing = time_s(rest_stop) - time_s(rest_start)  % find the tempo by 
+% 
+% figure(6)
+% plot(rest)
+% xlabel("Time (s)")
+% ylabel("Amplitude")
+% title("Envelope Inverse of Row Row Row Your Boat")
 
 
 %% Sync the time
